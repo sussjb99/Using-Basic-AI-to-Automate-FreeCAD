@@ -122,7 +122,7 @@ Repeat these steps iteratively until the object renders correctly as required an
 
 Printing the 3D-generated object created in FreeCAD is straightforward:
 
-1. **Export the 3D model:** Select the object in FreeCAD, then go to **File** \> **Export**. Select \**STL Mesh (\*.stl .ast)* as the file format.
+1. **Export the 3D model:** Select the object in FreeCAD, then go to **File** \> **Export**. Select \**STL Mesh (\*.stl)* as the file format.
 
 2. **Slice the model:** Import the exported STL file into your slicer software (e.g., PrusaSlicer, Cura, or Bambu Studio) and slice it to generate the **G-code** file.
 
