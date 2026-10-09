@@ -61,8 +61,6 @@ In addition, I would suggest asking the AI to create a prompt to fully document 
 
 The specific assets for this project will be posted in my GitHub repository:
 
-The specific assets for this project will be posted in my GitHub repository:
-
 - *AI Prompt*
 - */assets/BeltKeeper.FCStd* (FreeCAD Project File)
 - */assets/BeltKeeper.FCMacro* (FreeCAD Macro)
