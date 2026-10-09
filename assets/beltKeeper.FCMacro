@@ -1,0 +1,167 @@
+import FreeCAD as App
+import Part
+
+# 1. Create or clear document
+doc = App.ActiveDocument
+if not doc:
+    doc = App.newDocument("BeltKeeper")
+
+# 2. Create Spreadsheet and setup parameters
+sheet = doc.getObject("Spreadsheet")
+if not sheet:
+    sheet = doc.addObject("Spreadsheet::Sheet", "Spreadsheet")
+
+parameters = [
+    ("A1", "BeltThickness", "B1", 3.5, "BeltThickness"),
+    ("A2", "BeltWidth", "B2", 39.50, "BeltWidth"),  # Updated width
+    ("A3", "Layers", "B3", 2, "Layers"),
+    ("A4", "WallThickness", "B4", 1.35, "WallThickness"),
+    ("A5", "KeeperDepth", "B5", 6.0, "KeeperDepth"),
+    ("A6", "FilletRadius", "B6", 1.0, "FilletRadius"),
+    ("A7", "OuterFilletRadius", "B7", 0.3, "OuterFilletRadius"),
+    ("A8", "InnerFilletRadius", "B8", 0.5, "InnerFilletRadius"),
+    ("A9", "CutOvershoot", "B9", 0.5, "CutOvershoot"),
+]
+
+for name_cell, name, val_cell, val, alias in parameters:
+    sheet.set(name_cell, name)
+    sheet.set(val_cell, str(val))
+    sheet.setAlias(val_cell, alias)
+
+# Derived values in Spreadsheet
+derived_values = [
+    ("A10", "InnerHeight", "B10", "=BeltThickness * Layers", "InnerHeight"),
+    ("A11", "InnerWidth", "B11", "=BeltWidth", "InnerWidth"),
+    ("A12", "OuterHeight", "B12", "=InnerHeight + 2 * WallThickness", "OuterHeight"),
+    ("A13", "OuterWidth", "B13", "=InnerWidth + 2 * WallThickness", "OuterWidth"),
+    ("A14", "OuterDepth", "B14", "=KeeperDepth", "OuterDepth"),
+]
+
+for name_cell, name, val_cell, expr, alias in derived_values:
+    sheet.set(name_cell, name)
+    sheet.set(val_cell, expr)
+    sheet.setAlias(val_cell, alias)
+
+
+# 3. Define the Parametric Object Class
+class ParametricBeltKeeper:
+    def __init__(self, obj):
+        obj.Proxy = self
+
+    def execute(self, obj):
+        # Retrieve the document spreadsheet
+        sheet = obj.Document.getObject("Spreadsheet")
+        if not sheet:
+            return
+
+        # Fetch computed values from spreadsheet and safely cast to float
+        outer_w = float(sheet.get("OuterWidth"))
+        outer_h = float(sheet.get("OuterHeight"))
+        outer_d = float(sheet.get("OuterDepth"))
+
+        inner_w = float(sheet.get("InnerWidth"))
+        inner_h = float(sheet.get("InnerHeight"))
+        cut_overshoot = float(sheet.get("CutOvershoot"))
+        fillet_r = float(sheet.get("FilletRadius"))
+        outer_fillet_r = float(sheet.get("OuterFilletRadius"))
+        inner_fillet_r = float(sheet.get("InnerFilletRadius"))
+
+        # Build Geometry
+        outer_box = Part.makeBox(outer_w, outer_h, outer_d)
+        outer_box.translate(App.Vector(-outer_w / 2.0, -outer_h / 2.0, 0.0))
+
+        cut_w = inner_w
+        cut_h = inner_h
+        cut_d = outer_d + 2.0 * cut_overshoot
+
+        inner_box = Part.makeBox(cut_w, cut_h, cut_d)
+        inner_box.translate(App.Vector(-cut_w / 2.0, -cut_h / 2.0, -cut_overshoot))
+
+        keeper_shape = outer_box.cut(inner_box)
+
+        # Main vertical outer corner fillets
+        vertical_outer_edges = []
+        for edge in keeper_shape.Edges:
+            v_points = [v.Point for v in edge.Vertexes]
+            is_vertical = (
+                len(v_points) == 2
+                and abs(v_points[0].x - v_points[1].x) < 1e-3
+                and abs(v_points[0].y - v_points[1].y) < 1e-3
+            )
+            is_outer = not all(
+                abs(abs(pt.x) - (inner_w / 2.0)) < 1e-3 for pt in v_points
+            )
+
+            if is_vertical and is_outer:
+                vertical_outer_edges.append(edge)
+
+        if vertical_outer_edges and fillet_r > 0:
+            keeper_shape = keeper_shape.makeFillet(fillet_r, vertical_outer_edges)
+
+        # Inner cavity corner fillets
+        vertical_inner_edges = []
+        for edge in keeper_shape.Edges:
+            v_points = [v.Point for v in edge.Vertexes]
+            is_vertical = (
+                len(v_points) == 2
+                and abs(v_points[0].x - v_points[1].x) < 1e-3
+                and abs(v_points[0].y - v_points[1].y) < 1e-3
+            )
+            is_inner = all(
+                abs(abs(pt.x) - (inner_w / 2.0)) < 1e-3 for pt in v_points
+            )
+
+            if is_vertical and is_inner:
+                vertical_inner_edges.append(edge)
+
+        if vertical_inner_edges and inner_fillet_r > 0:
+            keeper_shape = keeper_shape.makeFillet(
+                inner_fillet_r, vertical_inner_edges
+            )
+
+        # Entry rim fillets
+        rim_edges = []
+        for edge in keeper_shape.Edges:
+            v_points = [v.Point for v in edge.Vertexes]
+            is_front_or_back = all(
+                abs(pt.z - 0.0) < 1e-3 or abs(pt.z - outer_d) < 1e-3
+                for pt in v_points
+            )
+            is_outer = not all(
+                abs(abs(pt.x) - (inner_w / 2.0)) < 1e-3 for pt in v_points
+            )
+
+            if is_front_or_back and is_outer:
+                rim_edges.append(edge)
+
+        if rim_edges and outer_fillet_r > 0:
+            keeper_shape = keeper_shape.makeFillet(outer_fillet_r, rim_edges)
+
+        # Assign updated shape to object
+        obj.Shape = keeper_shape
+
+
+# 4. Create or Update Parametric Feature
+keeper_obj = doc.getObject("BeltKeeper")
+if not keeper_obj:
+    keeper_obj = doc.addObject("Part::FeaturePython", "BeltKeeper")
+    ParametricBeltKeeper(keeper_obj)
+    if App.GuiUp:
+        import FreeCADGui
+
+        keeper_obj.ViewObject.Proxy = 0  # Default view provider
+
+# Link Spreadsheet dependency to force automatic execution on change
+keeper_obj.addProperty(
+    "App::PropertyLink", "Spreadsheet", "Base", "Source spreadsheet"
+)
+keeper_obj.Spreadsheet = sheet
+
+doc.recompute()
+
+# 5. Fit View
+if App.GuiUp:
+    import FreeCADGui
+
+    FreeCADGui.activeDocument().activeView().viewAxonometric()
+    FreeCADGui.SendMsgToActiveView("ViewFit")
