@@ -93,7 +93,7 @@ Running the provided FreeCAD macro is straightforward:
 
 <img width="793" height="608" alt="image" src="https://github.com/user-attachments/assets/55f3755b-fc62-4d15-ae08-910aeea0373e" />
 
-7. And finally, execute the macro  and observe the results produced by the execution of the macro.
+7. **And finally, execute the macro  and observe the results produced by the execution of the macro.**
    <img width="428" height="314" alt="image" src="https://github.com/user-attachments/assets/e9218e73-9630-497a-aa30-fe3a57524968" />
 
 If all goes well, you should see a result screen in FreeCAD similar to the following:
