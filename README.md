@@ -30,6 +30,7 @@ The next measurement is the width of the belt, which in my case is 39.5 mm.
 
 Finally, two additional dimensions need to be selected: the depth of the belt return and the thickness of its walls. For my design, I chose a depth of 6 mm and a wall thickness of 1.35 mm.
 
+<img width="970" height="599" alt="image" src="https://github.com/user-attachments/assets/cfaa2118-3472-44c5-ad7a-992b924345c9" />
 
 
 In summary, here are the key parameters for my belt return.
