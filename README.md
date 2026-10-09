@@ -138,6 +138,7 @@ Don’t be surprised if your first print is slightly off in terms of the require
 
 Following a successful print, a light sanding may be required using 180-grit sandpaper. Given that my belt returns are printed in black PLA, I have found that a few strokes of a black Sharpie marker fully hide any remaining sanding marks.
 
+<img width="266" height="108" alt="image" src="https://github.com/user-attachments/assets/3f044fad-2730-4c32-9c0c-9375dc47453a" />
 
 
 
