@@ -63,11 +63,11 @@ The specific assets for this project will be posted in my GitHub repository:
 
 - **AI Prompt**
 
-- **`BeltKeeper.FCStd`** (FreeCAD Project File)
+- **`/assets/BeltKeeper.FCStd`** (FreeCAD Project File)
 
-- **`BeltKeeper.FCMacro`** (FreeCAD Macro)
+- **`/assets/BeltKeeper.FCMacro`** (FreeCAD Macro)
 
-- **`BeltKeeper.stl`** (3D Printable File
+- **`/assets/BeltKeeper.stl`** (3D Printable File
 
 
 
