@@ -329,6 +329,6 @@ FreeCADGui.SendMsgToActiveView("ViewFit")
 ```
 
 
-# Appendix C (FreeCad Spreadsheet)
+# Appendix C (FreeCAD Spreadsheet)
 <img width="247" height="418" alt="image" src="https://github.com/user-attachments/assets/e24074c2-4b96-45be-81be-4c41ce3f72d6" />
 
